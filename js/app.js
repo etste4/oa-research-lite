@@ -38,26 +38,52 @@ btn.addEventListener("click", async () => {
   const year = yearFromCrossrefItem(item);
   const publisher = item.publisher || "";
 
-  let estadoOA = "No";
+  let estadoOA = "closed";
+let pdf = "";
+let landing = "";
 
-  if (doi) {
+ if (doi) {
 
-    const up = await buscarOAporDOI(doi);
+  const up = await buscarOAporDOI(doi);
 
-    if (up && up.is_oa) {
-      estadoOA = up.oa_status || "OA";
+  if (up && up.is_oa) {
+  estadoOA = up.oa_status || "OA";
+
+  if (up.best_oa_location) {
+    landing = up.best_oa_location.url || up.best_oa_location.url_for_landing_page || "";
+
+    if (up.best_oa_location.url_for_pdf) {
+      pdf = up.best_oa_location.url_for_pdf;
     }
-
   }
 
-  agregarFila({
-    title,
-    doi,
-    is_oa: estadoOA,
-    journal,
-    year,
-    publisher
-  });
+  if (!pdf && Array.isArray(up.oa_locations)) {
+    const locationConPdf = up.oa_locations.find(loc => loc.url_for_pdf);
+    if (locationConPdf) {
+      pdf = locationConPdf.url_for_pdf;
+    }
+  }
+
+  if (!landing && Array.isArray(up.oa_locations)) {
+    const locationConLanding = up.oa_locations.find(loc => loc.url || loc.url_for_landing_page);
+    if (locationConLanding) {
+      landing = locationConLanding.url || locationConLanding.url_for_landing_page;
+    }
+  }
+}
+
+}
+
+agregarFila({
+  title,
+  doi,
+  is_oa: estadoOA,
+  journal,
+  year,
+  publisher,
+  pdf,
+  landing
+});
 
 }
 

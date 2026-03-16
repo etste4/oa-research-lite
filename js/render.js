@@ -15,9 +15,10 @@ export function agregarFila(row) {
     ${row.doi}
   </a>
 </td>
-    <td>
+<td>
   ${row.is_oa}
   ${row.pdf ? `<br><a href="${row.pdf}" target="_blank">PDF</a>` : ""}
+  ${!row.pdf && row.landing ? `<br><a href="${row.landing}" target="_blank">Ver OA</a>` : ""}
 </td>
     <td>${row.journal}</td>
     <td>${row.year}</td>
