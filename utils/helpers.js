@@ -3,11 +3,13 @@ export function validarORCID(orcid) {
 }
 
 export function yearFromCrossrefItem(item) {
-  const fields = [item['published-print'], item['published-online'], item['issued']];
+  const fields = [item["published-print"], item["published-online"], item["issued"]];
+
   for (const f of fields) {
-    if (f && f['date-parts'] && f['date-parts'][0] && f['date-parts'][0][0]) {
-      return f['date-parts'][0][0];
+    if (f && f["date-parts"] && f["date-parts"][0] && f["date-parts"][0][0]) {
+      return f["date-parts"][0][0];
     }
   }
+
   return "";
 }

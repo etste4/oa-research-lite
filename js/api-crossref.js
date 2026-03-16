@@ -1,43 +1,16 @@
-export async function buscarCrossrefPorORCID(orcid, rows = 100) {
-  const allItems = [];
-  let cursor = "*";
-  const base = "https://api.crossref.org/works";
+export async function buscarCrossrefPorORCID(orcid, rows = 20) {
+  const url = `https://api.crossref.org/works?filter=orcid:${orcid}&rows=${rows}&sort=issued&order=desc`;
 
-  const params = new URLSearchParams({
-    filter: `orcid:${orcid}`,
-    rows: String(rows),
-    cursor: cursor,
-    sort: "issued",
-    order: "desc"
+  const respuesta = await fetch(url, {
+    headers: {
+      "Accept": "application/json"
+    }
   });
 
-  let fetched = 0;
-
-  while (true) {
-    const url = `${base}?${params.toString()}`;
-
-    const r = await fetch(url, {
-      headers: { "Accept": "application/json" }
-    });
-
-    if (!r.ok) {
-      throw new Error("Error consultando Crossref");
-    }
-
-    const data = await r.json();
-    const items = data.message.items || [];
-
-    allItems.push(...items);
-    fetched += items.length;
-
-    const nextCursor = data.message["next-cursor"];
-
-    if (!nextCursor || items.length === 0 || fetched >= 500) {
-      break;
-    }
-
-    params.set("cursor", nextCursor);
+  if (!respuesta.ok) {
+    throw new Error(`Error Crossref: ${respuesta.status}`);
   }
 
-  return allItems;
+  const data = await respuesta.json();
+  return data.message.items || [];
 }
