@@ -10,8 +10,15 @@ export function agregarFila(row) {
 
   tr.innerHTML = `
     <td>${row.title}</td>
-    <td>${row.doi}</td>
-    <td>${row.is_oa}</td>
+    <td>
+  <a href="https://doi.org/${row.doi}" target="_blank">
+    ${row.doi}
+  </a>
+</td>
+    <td>
+  ${row.is_oa}
+  ${row.pdf ? `<br><a href="${row.pdf}" target="_blank">PDF</a>` : ""}
+</td>
     <td>${row.journal}</td>
     <td>${row.year}</td>
     <td>${row.publisher}</td>
