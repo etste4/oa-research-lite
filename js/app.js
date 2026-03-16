@@ -37,6 +37,8 @@ btn.addEventListener("click", async () => {
       return;
     }
 
+    const resultadosProcesados = [];
+
    for (const item of items) {
 
   const { primerAutor, todosAutores } = obtenerAutores(item);
@@ -99,26 +101,47 @@ btn.addEventListener("click", async () => {
     }
   }
 
-  agregarFila({
-    title,
-    doi,
-    is_oa: estadoOA,
-    journal,
-    year,
-    publisher,
-    pdf,
-    landing,
-    primerAutor,
-    todosAutores,
-    citas,
-    institucion,
-    pais,
-    tema,
-    enDoaj
-  });
+  const fila = {
+  title,
+  doi,
+  is_oa: estadoOA,
+  journal,
+  year,
+  publisher,
+  pdf,
+  landing,
+  primerAutor,
+  todosAutores,
+  citas,
+  institucion,
+  pais,
+  tema,
+  enDoaj
+};
+
+resultadosProcesados.push(fila);
+agregarFila(fila);
 }
 
+function actualizarResumen(resultados) {
+  const totalArticulos = resultados.length;
 
+  const totalOA = resultados.filter(r => r.is_oa && r.is_oa !== "closed").length;
+
+  const totalPDF = resultados.filter(r => r.pdf && r.pdf.trim() !== "").length;
+
+  const totalCitas = resultados.reduce((suma, r) => {
+    return suma + (parseInt(r.citas) || 0);
+  }, 0);
+
+  const totalDOAJ = resultados.filter(r => r.enDoaj === "Sí").length;
+
+  document.getElementById("totalArticulos").textContent = totalArticulos;
+  document.getElementById("totalOA").textContent = totalOA;
+  document.getElementById("totalPDF").textContent = totalPDF;
+  document.getElementById("totalCitas").textContent = totalCitas;
+  document.getElementById("totalDOAJ").textContent = totalDOAJ;
+}
 
     status.textContent = `Se encontraron ${items.length} resultados en Crossref`;
   } catch (error) {
@@ -126,3 +149,4 @@ btn.addEventListener("click", async () => {
     status.textContent = "Error al consultar Crossref";
   }
 });
+

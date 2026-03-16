@@ -320,3 +320,31 @@ padding:4px 10px;
 border-radius:20px;
 font-weight:600;
 }
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 20px 0 24px;
+}
+
+.summary-card {
+  background: #ffffff;
+  border: 1px solid #d9e3ee;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 6px 16px rgba(20, 60, 100, 0.08);
+}
+
+.summary-label {
+  display: block;
+  font-size: 13px;
+  color: #5b6b7f;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.summary-card strong {
+  font-size: 28px;
+  color: #0f3d63;
+  font-weight: 700;
+}
