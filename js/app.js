@@ -2,6 +2,7 @@ import { validarORCID, yearFromCrossrefItem } from "../utils/helpers.js";
 import { buscarCrossrefPorORCID } from "./api-crossref.js";
 import { limpiarTabla, agregarFila } from "./render.js";
 import { buscarOAporDOI } from "./api-unpaywall.js";
+import { validarORCID, yearFromCrossrefItem, obtenerAutores } from "../utils/helpers.js";
 
 const btn = document.getElementById("searchBtn");
 const input = document.getElementById("orcidInput");
@@ -32,6 +33,7 @@ btn.addEventListener("click", async () => {
 
    for (const item of items) {
 
+   const { primerAutor, todosAutores } = obtenerAutores(item); 
   const title = item.title?.[0] || "Sin título";
   const doi = item.DOI || "";
   const journal = item["container-title"]?.[0] || "";
@@ -82,7 +84,9 @@ agregarFila({
   year,
   publisher,
   pdf,
-  landing
+  landing,
+  primerAutor,
+  todosAutores
 });
 
 }
