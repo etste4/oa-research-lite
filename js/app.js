@@ -1,8 +1,7 @@
-import { validarORCID, yearFromCrossrefItem } from "../utils/helpers.js";
+import { validarORCID, yearFromCrossrefItem, obtenerAutores } from "../utils/helpers.js";
 import { buscarCrossrefPorORCID } from "./api-crossref.js";
 import { limpiarTabla, agregarFila } from "./render.js";
 import { buscarOAporDOI } from "./api-unpaywall.js";
-import { validarORCID, yearFromCrossrefItem, obtenerAutores } from "../utils/helpers.js";
 
 const btn = document.getElementById("searchBtn");
 const input = document.getElementById("orcidInput");
