@@ -16,9 +16,11 @@ export function agregarFila(row) {
   </a>
 </td>
 <td>
-  ${row.is_oa}
-  ${row.pdf ? `<br><a href="${row.pdf}" target="_blank">PDF</a>` : ""}
-  ${!row.pdf && row.landing ? `<br><a href="${row.landing}" target="_blank">Ver OA</a>` : ""}
+  <span class="oa-badge">${row.is_oa}</span>
+  <div class="oa-links">
+    ${row.pdf ? `<a href="${row.pdf}" target="_blank">PDF</a>` : ""}
+    ${!row.pdf && row.landing ? `<a href="${row.landing}" target="_blank">Ver OA</a>` : ""}
+  </div>
 </td>
     <td>${row.journal}</td>
     <td>${row.year}</td>
