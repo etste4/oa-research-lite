@@ -1,12 +1,11 @@
 import { validarORCID, yearFromCrossrefItem } from "../utils/helpers.js";
 import { buscarCrossrefPorORCID } from "./api-crossref.js";
 import { limpiarTabla, agregarFila } from "./render.js";
+import { buscarOAporDOI } from "./api-unpaywall.js";
 
 const btn = document.getElementById("searchBtn");
 const input = document.getElementById("orcidInput");
 const status = document.getElementById("status");
-
-console.log("app.js cargado correctamente");
 
 btn.addEventListener("click", async () => {
   const orcid = input.value.trim();
@@ -31,22 +30,36 @@ btn.addEventListener("click", async () => {
       return;
     }
 
-    for (const item of items) {
-      const title = item.title?.[0] || "Sin título";
-      const doi = item.DOI || "";
-      const journal = item["container-title"]?.[0] || "";
-      const year = yearFromCrossrefItem(item);
-      const publisher = item.publisher || "";
+   for (const item of items) {
 
-      agregarFila({
-        title,
-        doi,
-        is_oa: "Pendiente",
-        journal,
-        year,
-        publisher
-      });
+  const title = item.title?.[0] || "Sin título";
+  const doi = item.DOI || "";
+  const journal = item["container-title"]?.[0] || "";
+  const year = yearFromCrossrefItem(item);
+  const publisher = item.publisher || "";
+
+  let estadoOA = "No";
+
+  if (doi) {
+
+    const up = await buscarOAporDOI(doi);
+
+    if (up && up.is_oa) {
+      estadoOA = up.oa_status || "OA";
     }
+
+  }
+
+  agregarFila({
+    title,
+    doi,
+    is_oa: estadoOA,
+    journal,
+    year,
+    publisher
+  });
+
+}
 
     status.textContent = `Se encontraron ${items.length} resultados en Crossref`;
   } catch (error) {
