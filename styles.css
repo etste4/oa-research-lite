@@ -301,4 +301,22 @@ td:nth-child(12) {
 td:nth-child(8) {
   text-align: center;
   font-weight: 600;
+}td:nth-child(7) {
+  max-width: 220px;
+}
+
+td:nth-child(10) {
+  max-width: 220px;
+}
+
+td {
+  vertical-align: top;
+  line-height: 1.4;
+}
+.citas-badge{
+background:#eef3ff;
+color:#1a4fa3;
+padding:4px 10px;
+border-radius:20px;
+font-weight:600;
 }
