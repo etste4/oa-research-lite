@@ -32,7 +32,7 @@ btn.addEventListener("click", async () => {
     }
 
    for (const item of items) {
-
+    console.log("Autores crudos:", item.author);
    const { primerAutor, todosAutores } = obtenerAutores(item); 
   const title = item.title?.[0] || "Sin título";
   const doi = item.DOI || "";
