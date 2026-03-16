@@ -33,3 +33,51 @@ export function obtenerAutores(item) {
     todosAutores: autores
   };
 }
+export function obtenerDatosOpenAlex(openAlexItem) {
+  if (!openAlexItem) {
+    return {
+      citas: "",
+      institucion: "",
+      pais: "",
+      tema: "",
+      enDoaj: ""
+    };
+  }
+
+  const citas = openAlexItem.cited_by_count ?? "";
+
+  let institucion = "";
+  let pais = "";
+
+  if (
+    Array.isArray(openAlexItem.authorships) &&
+    openAlexItem.authorships.length > 0
+  ) {
+    const primeraAuthorship = openAlexItem.authorships[0];
+
+    if (
+      Array.isArray(primeraAuthorship.institutions) &&
+      primeraAuthorship.institutions.length > 0
+    ) {
+      institucion = primeraAuthorship.institutions[0].display_name || "";
+      pais = primeraAuthorship.institutions[0].country_code || "";
+    }
+  }
+
+  const tema = openAlexItem.primary_topic?.display_name || "";
+
+  let enDoaj = "";
+  if (openAlexItem.primary_location?.source?.is_in_doaj === true) {
+    enDoaj = "Sí";
+  } else if (openAlexItem.primary_location?.source?.is_in_doaj === false) {
+    enDoaj = "No";
+  }
+
+  return {
+    citas,
+    institucion,
+    pais,
+    tema,
+    enDoaj
+  };
+}

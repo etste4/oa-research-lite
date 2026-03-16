@@ -35,6 +35,12 @@ export function agregarFila(row) {
     <td>${row.year}</td>
     <td>${row.publisher}</td>
     <td>${autoresHtml}</td>
+    <td>${autoresHtml}</td>
+<td>${row.citas || ""}</td>
+<td>${row.institucion || ""}</td>
+<td>${row.pais || ""}</td>
+<td>${row.tema || ""}</td>
+<td>${row.enDoaj || ""}</td>
   `;
 
   tbody.appendChild(tr);

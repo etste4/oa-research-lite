@@ -1,7 +1,14 @@
-import { validarORCID, yearFromCrossrefItem, obtenerAutores } from "../utils/helpers.js";
+import {
+  validarORCID,
+  yearFromCrossrefItem,
+  obtenerAutores,
+  obtenerDatosOpenAlex
+} from "../utils/helpers.js";
+
 import { buscarCrossrefPorORCID } from "./api-crossref.js";
-import { limpiarTabla, agregarFila } from "./render.js";
 import { buscarOAporDOI } from "./api-unpaywall.js";
+import { buscarOpenAlexPorDOI } from "./api-openalex.js";
+import { limpiarTabla, agregarFila } from "./render.js";
 
 const btn = document.getElementById("searchBtn");
 const input = document.getElementById("orcidInput");
@@ -31,7 +38,24 @@ btn.addEventListener("click", async () => {
     }
 
    for (const item of items) {
-    console.log("Autores crudos:", item.author);
+
+    let citas = "";
+let institucion = "";
+let pais = "";
+let tema = "";
+let enDoaj = "";
+
+if (doi) {
+  const openAlex = await buscarOpenAlexPorDOI(doi);
+  const datosOA = obtenerDatosOpenAlex(openAlex);
+
+  citas = datosOA.citas;
+  institucion = datosOA.institucion;
+  pais = datosOA.pais;
+  tema = datosOA.tema;
+  enDoaj = datosOA.enDoaj;
+}
+
    const { primerAutor, todosAutores } = obtenerAutores(item); 
   const title = item.title?.[0] || "Sin título";
   const doi = item.DOI || "";
@@ -85,7 +109,12 @@ agregarFila({
   pdf,
   landing,
   primerAutor,
-  todosAutores
+  todosAutores,
+  citas,
+  institucion,
+  pais,
+  tema,
+  enDoaj
 });
 
 }
