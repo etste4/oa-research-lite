@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OA Research Lite</title>
+
+<link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+<h1>Consulta de Acceso Abierto por ORCID</h1>
+
+<div class="search-box">
+
+<label>ORCID</label>
+
+<input 
+type="text" 
+id="orcidInput" 
+placeholder="0000-0000-0000-0000"
+/>
+
+<button id="searchBtn">
+Consultar
+</button>
+
+</div>
+
+<div id="status"></div>
+
+<div class="table-container">
+
+<table id="resultsTable">
+
+<thead>
+<tr>
+<th>Título</th>
+<th>DOI</th>
+<th>OA</th>
+<th>Revista</th>
+<th>Año</th>
+<th>Editorial</th>
+</tr>
+</thead>
+
+<tbody>
+
+</tbody>
+
+</table>
+
+</div>
+
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>
