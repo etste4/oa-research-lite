@@ -25,6 +25,7 @@ btn.addEventListener("click", async () => {
   }
 
   limpiarTabla();
+  actualizarResumen([]);
   status.textContent = "Consultando Crossref...";
 
   try {
@@ -122,6 +123,8 @@ btn.addEventListener("click", async () => {
 resultadosProcesados.push(fila);
 agregarFila(fila);
 }
+actualizarResumen(resultadosProcesados);
+
 
 function actualizarResumen(resultados) {
   const totalArticulos = resultados.length;
