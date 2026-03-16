@@ -39,85 +39,86 @@ btn.addEventListener("click", async () => {
 
    for (const item of items) {
 
-    let citas = "";
-let institucion = "";
-let pais = "";
-let tema = "";
-let enDoaj = "";
-
-if (doi) {
-  const openAlex = await buscarOpenAlexPorDOI(doi);
-  const datosOA = obtenerDatosOpenAlex(openAlex);
-
-  citas = datosOA.citas;
-  institucion = datosOA.institucion;
-  pais = datosOA.pais;
-  tema = datosOA.tema;
-  enDoaj = datosOA.enDoaj;
-}
-
-   const { primerAutor, todosAutores } = obtenerAutores(item); 
+  const { primerAutor, todosAutores } = obtenerAutores(item);
   const title = item.title?.[0] || "Sin título";
   const doi = item.DOI || "";
   const journal = item["container-title"]?.[0] || "";
   const year = yearFromCrossrefItem(item);
   const publisher = item.publisher || "";
 
+  let citas = "";
+  let institucion = "";
+  let pais = "";
+  let tema = "";
+  let enDoaj = "";
+
+  if (doi) {
+    const openAlex = await buscarOpenAlexPorDOI(doi);
+    const datosOA = obtenerDatosOpenAlex(openAlex);
+
+    citas = datosOA.citas;
+    institucion = datosOA.institucion;
+    pais = datosOA.pais;
+    tema = datosOA.tema;
+    enDoaj = datosOA.enDoaj;
+  }
+
   let estadoOA = "closed";
-let pdf = "";
-let landing = "";
+  let pdf = "";
+  let landing = "";
 
- if (doi) {
+  if (doi) {
+    const up = await buscarOAporDOI(doi);
 
-  const up = await buscarOAporDOI(doi);
+    if (up && up.is_oa) {
+      estadoOA = up.oa_status || "OA";
 
-  if (up && up.is_oa) {
-  estadoOA = up.oa_status || "OA";
+      if (up.best_oa_location) {
+        landing = up.best_oa_location.url || up.best_oa_location.url_for_landing_page || "";
 
-  if (up.best_oa_location) {
-    landing = up.best_oa_location.url || up.best_oa_location.url_for_landing_page || "";
+        if (up.best_oa_location.url_for_pdf) {
+          pdf = up.best_oa_location.url_for_pdf;
+        }
+      }
 
-    if (up.best_oa_location.url_for_pdf) {
-      pdf = up.best_oa_location.url_for_pdf;
+      if (!pdf && Array.isArray(up.oa_locations)) {
+        const locationConPdf = up.oa_locations.find(loc => loc.url_for_pdf);
+        if (locationConPdf) {
+          pdf = locationConPdf.url_for_pdf;
+        }
+      }
+
+      if (!landing && Array.isArray(up.oa_locations)) {
+        const locationConLanding = up.oa_locations.find(
+          loc => loc.url || loc.url_for_landing_page
+        );
+        if (locationConLanding) {
+          landing = locationConLanding.url || locationConLanding.url_for_landing_page;
+        }
+      }
     }
   }
 
-  if (!pdf && Array.isArray(up.oa_locations)) {
-    const locationConPdf = up.oa_locations.find(loc => loc.url_for_pdf);
-    if (locationConPdf) {
-      pdf = locationConPdf.url_for_pdf;
-    }
-  }
-
-  if (!landing && Array.isArray(up.oa_locations)) {
-    const locationConLanding = up.oa_locations.find(loc => loc.url || loc.url_for_landing_page);
-    if (locationConLanding) {
-      landing = locationConLanding.url || locationConLanding.url_for_landing_page;
-    }
-  }
+  agregarFila({
+    title,
+    doi,
+    is_oa: estadoOA,
+    journal,
+    year,
+    publisher,
+    pdf,
+    landing,
+    primerAutor,
+    todosAutores,
+    citas,
+    institucion,
+    pais,
+    tema,
+    enDoaj
+  });
 }
 
-}
 
-agregarFila({
-  title,
-  doi,
-  is_oa: estadoOA,
-  journal,
-  year,
-  publisher,
-  pdf,
-  landing,
-  primerAutor,
-  todosAutores,
-  citas,
-  institucion,
-  pais,
-  tema,
-  enDoaj
-});
-
-}
 
     status.textContent = `Se encontraron ${items.length} resultados en Crossref`;
   } catch (error) {
