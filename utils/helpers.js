@@ -116,18 +116,20 @@ function mapearTipoPublicacion(type) {
 }
 
 function obtenerIndexadoEn(openAlexItem) {
-  if (!openAlexItem.indexed_in) {
+  if (!openAlexItem || !openAlexItem.indexed_in) {
     return "No indexado";
   }
 
-  const indices = openAlexItem.indexed_in || {};
-  const indicesPresentes = Object.entries(indices)
-    .filter(([_, valor]) => valor === true)
-    .map(([clave, _]) => formatearNombreIndice(clave));
+  // indexed_in viene como un array: ["crossref", "doaj", "pubmed"]
+  const indicesArray = openAlexItem.indexed_in;
 
-  return indicesPresentes.length > 0 
-    ? indicesPresentes.join(" | ")
-    : "No indexado";
+  if (!Array.isArray(indicesArray) || indicesArray.length === 0) {
+    return "No indexado";
+  }
+
+  const indicesFormateados = indicesArray.map(indice => formatearNombreIndice(indice));
+
+  return indicesFormateados.join(" | ");
 }
 
 function formatearNombreIndice(nombre) {
