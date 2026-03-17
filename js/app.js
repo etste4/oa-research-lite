@@ -75,7 +75,7 @@ btn.addEventListener("click", async () => {
   let tema = "";
   let enDoaj = "";
   let tipoPublicacion = "";
-  let rankingRevista = "";
+  let indexadoEn = "";
   let apcPricing = "";
 
   if (doi) {
@@ -88,7 +88,7 @@ btn.addEventListener("click", async () => {
     tema = datosOA.tema;
     enDoaj = datosOA.enDoaj;
     tipoPublicacion = datosOA.tipoPublicacion;
-    rankingRevista = datosOA.rankingRevista;
+    indexadoEn = datosOA.indexadoEn;
     apcPricing = datosOA.apcPricing;
   }
 
@@ -145,7 +145,7 @@ btn.addEventListener("click", async () => {
   tema,
   enDoaj,
   tipoPublicacion,
-  rankingRevista,
+  indexadoEn,
   apcPricing
 };
 

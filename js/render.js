@@ -68,7 +68,7 @@ export function agregarFila(row) {
         <strong>En DOAJ:</strong> ${row.enDoaj || "N/A"}
       </div>
       <div class="detail-item">
-        <strong>Ranking:</strong> ${row.rankingRevista || "N/A"}
+        <strong>Indexado en:</strong> ${row.indexadoEn || "N/A"}
       </div>
       <div class="detail-item">
         <strong>APC:</strong> ${row.apcPricing || "N/A"}

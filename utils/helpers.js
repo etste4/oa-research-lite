@@ -80,7 +80,7 @@ export function obtenerDatosOpenAlex(openAlexItem) {
   const tipoPublicacion = mapearTipoPublicacion(openAlexItem.type);
 
   // RANKING/INFO DE REVISTA
-  const rankingRevista = obtenerRankingRevista(openAlexItem);
+  const indexadoEn = obtenerIndexadoEn(openAlexItem);
 
   // APC PRICING
   const apcPricing = openAlexItem.apc_paid?.pricing_currency
@@ -94,53 +94,37 @@ export function obtenerDatosOpenAlex(openAlexItem) {
     tema,
     enDoaj,
     tipoPublicacion,
-    rankingRevista,
+    indexadoEn,
     apcPricing
   };
 }
 
-function mapearTipoPublicacion(type) {
-  const tipos = {
-    "journal-article": "Artículo de revista",
-    "conference-paper": "Artículo de conferencia",
-    "book-chapter": "Capítulo de libro",
-    "book": "Libro",
-    "preprint": "Preprint",
-    "report": "Informe",
-    "thesis": "Tesis",
-    "dataset": "Dataset",
-    "other": "Otro"
-  };
+function obtenerIndexadoEn(openAlexItem) {
+  if (!openAlexItem.indexed_in) {
+    return "No indexado";
+  }
 
-  return tipos[type] || type || "No especificado";
+  const indices = openAlexItem.indexed_in || {};
+  const indicesPresentes = Object.entries(indices)
+    .filter(([_, valor]) => valor === true)
+    .map(([clave, _]) => formatearNombreIndice(clave));
+
+  return indicesPresentes.length > 0 
+    ? indicesPresentes.join(" | ")
+    : "No indexado";
 }
 
-function obtenerRankingRevista(openAlexItem) {
-  if (!openAlexItem.primary_location?.source) {
-    return "N/A";
-  }
+function formatearNombreIndice(nombre) {
+  const mapeo = {
+    "crossref": "🔗 Crossref",
+    "pubmed": "🏥 PubMed",
+    "pmid": "🏥 PMID",
+    "pubmed_central": "🏥 PubMed Central",
+    "web_of_science": "🌐 Web of Science",
+    "scopus": "🌐 Scopus",
+    "microsoft_academic": "🔵 Microsoft Academic",
+    "doaj": "📚 DOAJ"
+  };
 
-  const source = openAlexItem.primary_location.source;
-  let ranking = [];
-
-  // Verificar si está en DOAJ
-  if (source.is_in_doaj) {
-    ranking.push("📚 En DOAJ");
-  }
-
-  // Verificar tipo de host
-  if (source.host_type === "publisher") {
-    ranking.push("🏢 Publisher");
-  } else if (source.host_type === "repository") {
-    ranking.push("📦 Repository");
-  }
-
-  // Verificar tipo de fuente
-  if (source.type === "journal") {
-    ranking.push("Journal");
-  } else if (source.type === "conference") {
-    ranking.push("Conference");
-  }
-
-  return ranking.length > 0 ? ranking.join(" | ") : "Catálogo general";
+  return mapeo[nombre] || nombre.charAt(0).toUpperCase() + nombre.slice(1).replace(/_/g, " ");
 }
