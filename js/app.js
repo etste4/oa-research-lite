@@ -123,6 +123,7 @@ btn.addEventListener("click", async () => {
 resultadosProcesados.push(fila);
 agregarFila(fila);
 }
+
 actualizarResumen(resultadosProcesados);
 
 
@@ -145,7 +146,6 @@ function actualizarResumen(resultados) {
   document.getElementById("totalCitas").textContent = totalCitas;
   document.getElementById("totalDOAJ").textContent = totalDOAJ;
 }
-
     status.textContent = `Se encontraron ${items.length} resultados en Crossref`;
   } catch (error) {
     console.error("Error real:", error);
