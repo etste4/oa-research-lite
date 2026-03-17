@@ -99,6 +99,22 @@ export function obtenerDatosOpenAlex(openAlexItem) {
   };
 }
 
+function mapearTipoPublicacion(type) {
+  const tipos = {
+    "journal-article": "Artículo de revista",
+    "conference-paper": "Artículo de conferencia",
+    "book-chapter": "Capítulo de libro",
+    "book": "Libro",
+    "preprint": "Preprint",
+    "report": "Informe",
+    "thesis": "Tesis",
+    "dataset": "Dataset",
+    "other": "Otro"
+  };
+
+  return tipos[type] || type || "No especificado";
+}
+
 function obtenerIndexadoEn(openAlexItem) {
   if (!openAlexItem.indexed_in) {
     return "No indexado";
