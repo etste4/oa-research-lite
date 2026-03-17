@@ -15,6 +15,78 @@ const btn = document.getElementById("searchBtn");
 const input = document.getElementById("orcidInput");
 const status = document.getElementById("status");
 
+async function cargarPersonas() {
+  const res = await fetch("data/persons.csv");
+  const text = await res.text();
+
+  const filas = text
+    .split("\n")
+    .slice(1)
+    .map(f => f.trim())
+    .filter(f => f.length > 0);
+
+  const personas = filas.map(f => {
+    const cols = f.split(";");
+
+    return {
+      id: (cols[0] || "").trim(),
+      email: (cols[3] || "").trim(),
+      nombre: `${(cols[7] || "").trim()} ${(cols[8] || "").trim()}`.trim(),
+      orcid: (cols[20] || "").trim(),
+      escuela: (cols[26] || "").trim(),
+      departamento: (cols[27] || "").trim(),
+      instituto: (cols[28] || "").trim(),
+      grupo: (cols[29] || "").trim(),
+      semillero: (cols[30] || "").trim()
+    };
+  }).filter(p => p.orcid !== "");
+
+  console.log("Personas cargadas:", personas);
+  return personas;
+}
+
+let listaPersonas = [];
+document.addEventListener("DOMContentLoaded", () => {
+  cargarPersonas().then(personas => {
+    listaPersonas = personas;
+    console.log("Personas cargadas:", listaPersonas);
+  }).catch(error => {
+    console.error("Error cargando personas:", error);
+  });
+});
+
+function llenarDatalist(personas) {
+  const datalist = document.getElementById("listaDocentes");
+  if (!datalist) {
+    console.error("No existe #listaDocentes en el HTML");
+    return;
+  }
+
+  datalist.innerHTML = "";
+
+  const nombresUnicos = [...new Set(
+    personas
+      .map(p => p.nombre?.trim())
+      .filter(Boolean)
+  )];
+
+  nombresUnicos.forEach(nombre => {
+    const option = document.createElement("option");
+    option.value = nombre;
+    datalist.appendChild(option);
+  });
+
+  console.log("Opciones cargadas en datalist:", datalist.children.length);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  listaPersonas = await cargarPersonas();
+  console.log("Personas cargadas:", listaPersonas.length);
+
+  llenarDatalist(listaPersonas);
+});
+
+
 function actualizarResumen(resultados) {
   const totalArticulos = resultados.length;
 
@@ -36,7 +108,18 @@ function actualizarResumen(resultados) {
 }
 
 btn.addEventListener("click", async () => {
-  const orcid = input.value.trim();
+  const nombreIngresado = input.value.trim().toLowerCase();
+
+const persona = listaPersonas.find(p =>
+  p.nombre.toLowerCase().includes(nombreIngresado)
+);
+
+if (!persona) {
+  status.textContent = "Investigador no encontrado";
+  return;
+}
+
+const orcid = persona.orcid;
 
   console.log("Clic en consultar:", orcid);
 

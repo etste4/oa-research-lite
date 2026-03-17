@@ -19,7 +19,7 @@
     <div class="header">
 
   <div>
-    <h1>Consulta de Acceso Abierto por ORCID</h1>
+    <h1>Producción Científica UNH</h1>
     <p class="subtitle">
       Vicerrectorado de Investigación - Universidad Nacional de Huancavelica
     </p>
@@ -32,13 +32,16 @@
     <!-- Buscador -->
     <div class="search-box">
 
-      <label for="orcidInput">ORCID</label>
+      <label for="orcidInput">Buscar docente o investigador</label>
 
-      <input
-        type="text"
-        id="orcidInput"
-        placeholder="0000-0000-0000-0000"
-      >
+     <datalist id="listaDocentes"></datalist>
+<input
+  type="text"
+  id="orcidInput"
+  list="listaDocentes"
+  placeholder="Buscar docente..."
+>
+
 
       <button id="searchBtn">
         Consultar
