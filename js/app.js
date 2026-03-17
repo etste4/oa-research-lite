@@ -14,6 +14,26 @@ const btn = document.getElementById("searchBtn");
 const input = document.getElementById("orcidInput");
 const status = document.getElementById("status");
 
+function actualizarResumen(resultados) {
+  const totalArticulos = resultados.length;
+
+  const totalOA = resultados.filter(r => r.is_oa && r.is_oa !== "closed").length;
+
+  const totalPDF = resultados.filter(r => r.pdf && r.pdf.trim() !== "").length;
+
+  const totalCitas = resultados.reduce((suma, r) => {
+    return suma + (parseInt(r.citas) || 0);
+  }, 0);
+
+  const totalDOAJ = resultados.filter(r => r.enDoaj === "Sí").length;
+
+  document.getElementById("totalArticulos").textContent = totalArticulos;
+  document.getElementById("totalOA").textContent = totalOA;
+  document.getElementById("totalPDF").textContent = totalPDF;
+  document.getElementById("totalCitas").textContent = totalCitas;
+  document.getElementById("totalDOAJ").textContent = totalDOAJ;
+}
+
 btn.addEventListener("click", async () => {
   const orcid = input.value.trim();
 
@@ -126,26 +146,6 @@ agregarFila(fila);
 
 actualizarResumen(resultadosProcesados);
 
-
-function actualizarResumen(resultados) {
-  const totalArticulos = resultados.length;
-
-  const totalOA = resultados.filter(r => r.is_oa && r.is_oa !== "closed").length;
-
-  const totalPDF = resultados.filter(r => r.pdf && r.pdf.trim() !== "").length;
-
-  const totalCitas = resultados.reduce((suma, r) => {
-    return suma + (parseInt(r.citas) || 0);
-  }, 0);
-
-  const totalDOAJ = resultados.filter(r => r.enDoaj === "Sí").length;
-
-  document.getElementById("totalArticulos").textContent = totalArticulos;
-  document.getElementById("totalOA").textContent = totalOA;
-  document.getElementById("totalPDF").textContent = totalPDF;
-  document.getElementById("totalCitas").textContent = totalCitas;
-  document.getElementById("totalDOAJ").textContent = totalDOAJ;
-}
     status.textContent = `Se encontraron ${items.length} resultados en Crossref`;
   } catch (error) {
     console.error("Error real:", error);
