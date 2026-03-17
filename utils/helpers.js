@@ -100,6 +100,8 @@ export function obtenerDatosOpenAlex(openAlexItem) {
 }
 
 function mapearTipoPublicacion(type) {
+  if (!type) return "No especificado";
+
   const tipos = {
     "journal-article": "Artículo de revista",
     "conference-paper": "Artículo de conferencia",
@@ -112,34 +114,26 @@ function mapearTipoPublicacion(type) {
     "other": "Otro"
   };
 
-  const resultado = tipos[type] || type || "No especificado";
-  console.log("Type recibido:", type, "Resultado mapeado:", resultado);
-  return resultado;
+  return tipos[type] || type;
 }
 
 function obtenerIndexadoEn(openAlexItem) {
-  if (!openAlexItem || !openAlexItem.indexed_in) {
-    console.log("No hay indexed_in");
+  if (!openAlexItem) {
     return "No indexado";
   }
 
-  // indexed_in viene como un array: ["crossref", "doaj", "pubmed"]
-  const indicesArray = openAlexItem.indexed_in;
-  console.log("indexed_in recibido:", indicesArray);
-
-  if (!Array.isArray(indicesArray) || indicesArray.length === 0) {
+  // Verificar si indexed_in existe y es un array
+  if (!Array.isArray(openAlexItem.indexed_in) || openAlexItem.indexed_in.length === 0) {
     return "No indexado";
   }
 
-  const indicesFormateados = indicesArray.map(indice => {
-    const formateado = formatearNombreIndice(indice);
-    console.log("Indice:", indice, "Formateado:", formateado);
-    return formateado;
-  });
+  const indicesFormateados = openAlexItem.indexed_in
+    .filter(indice => typeof indice === 'string')
+    .map(indice => formatearNombreIndice(indice.toLowerCase()));
 
-  const resultado = indicesFormateados.join(" | ");
-  console.log("Resultado final indexed_in:", resultado);
-  return resultado;
+  return indicesFormateados.length > 0 
+    ? indicesFormateados.join(" | ")
+    : "No indexado";
 }
 
 function formatearNombreIndice(nombre) {
