@@ -417,7 +417,7 @@ font-weight:600;
 
 .card-meta {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
   font-size: 13px;
@@ -447,7 +447,7 @@ font-weight:600;
   padding: 14px 16px;
   margin-bottom: 14px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   font-size: 12px;
   flex-grow: 1;

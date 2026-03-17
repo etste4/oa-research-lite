@@ -74,6 +74,9 @@ btn.addEventListener("click", async () => {
   let pais = "";
   let tema = "";
   let enDoaj = "";
+  let tipoPublicacion = "";
+  let rankingRevista = "";
+  let apcPricing = "";
 
   if (doi) {
     const openAlex = await buscarOpenAlexPorDOI(doi);
@@ -84,6 +87,9 @@ btn.addEventListener("click", async () => {
     pais = datosOA.pais;
     tema = datosOA.tema;
     enDoaj = datosOA.enDoaj;
+    tipoPublicacion = datosOA.tipoPublicacion;
+    rankingRevista = datosOA.rankingRevista;
+    apcPricing = datosOA.apcPricing;
   }
 
   let estadoOA = "closed";
@@ -137,7 +143,10 @@ btn.addEventListener("click", async () => {
   institucion,
   pais,
   tema,
-  enDoaj
+  enDoaj,
+  tipoPublicacion,
+  rankingRevista,
+  apcPricing
 };
 
 resultadosProcesados.push(fila);

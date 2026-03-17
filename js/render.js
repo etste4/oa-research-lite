@@ -43,6 +43,9 @@ export function agregarFila(row) {
       <div class="meta-item">
         <strong>Revista:</strong> ${row.journal || "N/A"}
       </div>
+      <div class="meta-item">
+        <strong>Tipo:</strong> ${row.tipoPublicacion || "N/A"}
+      </div>
     </div>
 
     <div class="card-details">
@@ -63,6 +66,12 @@ export function agregarFila(row) {
       </div>
       <div class="detail-item">
         <strong>En DOAJ:</strong> ${row.enDoaj || "N/A"}
+      </div>
+      <div class="detail-item">
+        <strong>Ranking:</strong> ${row.rankingRevista || "N/A"}
+      </div>
+      <div class="detail-item">
+        <strong>APC:</strong> ${row.apcPricing || "N/A"}
       </div>
     </div>
 
