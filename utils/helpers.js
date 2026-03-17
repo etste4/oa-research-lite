@@ -112,24 +112,34 @@ function mapearTipoPublicacion(type) {
     "other": "Otro"
   };
 
-  return tipos[type] || type || "No especificado";
+  const resultado = tipos[type] || type || "No especificado";
+  console.log("Type recibido:", type, "Resultado mapeado:", resultado);
+  return resultado;
 }
 
 function obtenerIndexadoEn(openAlexItem) {
   if (!openAlexItem || !openAlexItem.indexed_in) {
+    console.log("No hay indexed_in");
     return "No indexado";
   }
 
   // indexed_in viene como un array: ["crossref", "doaj", "pubmed"]
   const indicesArray = openAlexItem.indexed_in;
+  console.log("indexed_in recibido:", indicesArray);
 
   if (!Array.isArray(indicesArray) || indicesArray.length === 0) {
     return "No indexado";
   }
 
-  const indicesFormateados = indicesArray.map(indice => formatearNombreIndice(indice));
+  const indicesFormateados = indicesArray.map(indice => {
+    const formateado = formatearNombreIndice(indice);
+    console.log("Indice:", indice, "Formateado:", formateado);
+    return formateado;
+  });
 
-  return indicesFormateados.join(" | ");
+  const resultado = indicesFormateados.join(" | ");
+  console.log("Resultado final indexed_in:", resultado);
+  return resultado;
 }
 
 function formatearNombreIndice(nombre) {
