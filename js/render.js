@@ -6,21 +6,49 @@ export function limpiarTabla() {
 export function agregarFila(row) {
   const container = document.getElementById("resultsCards");
 
-  const autoresHtml = row.todosAutores && row.todosAutores.length > 0
-    ? `
+  const generarAutoresHtml = () => {
+    if (!row.todosAutoresConAfiliacion || row.todosAutoresConAfiliacion.length === 0) {
+      return `<div class="card-authors"><strong>Autores:</strong> Sin información</div>`;
+    }
+
+    const primerAutor = row.todosAutoresConAfiliacion[0];
+    const esPrimerAutorSearched = primerAutor.orcid === row.orcidBuscado;
+
+    let html = `
       <div class="card-authors">
-        <strong>Autores:</strong> ${row.primerAutor}
-        ${row.todosAutores.length > 1 ? `
-          <details class="more-authors">
-            <summary>Ver todos (${row.todosAutores.length})</summary>
-            <ul>
-              ${row.todosAutores.map(a => `<li>${a}</li>`).join("")}
-            </ul>
-          </details>
-        ` : ""}
-      </div>
-    `
-    : `<div class="card-authors"><strong>Autores:</strong> Sin autor</div>`;
+        <strong>Autores:</strong>
+        <ul class="authors-list">
+          <li class="${esPrimerAutorSearched ? 'author-highlighted' : ''}">
+            <span class="author-name">${primerAutor.nombre || "Sin nombre"}</span>
+            ${primerAutor.institucion ? `<span class="author-affiliation">${primerAutor.institucion}${primerAutor.pais ? `, ${primerAutor.pais}` : ""}</span>` : ""}
+            ${esPrimerAutorSearched ? `<span class="author-badge">👤 ORCID Buscado</span>` : ""}
+          </li>
+        </ul>
+    `;
+
+    if (row.todosAutoresConAfiliacion.length > 1) {
+      html += `
+        <details class="more-authors">
+          <summary>Ver todos (${row.todosAutoresConAfiliacion.length})</summary>
+          <ul class="authors-list">
+            ${row.todosAutoresConAfiliacion.slice(1).map(autor => {
+              const esSearched = autor.orcid === row.orcidBuscado;
+              return `
+                <li class="${esSearched ? 'author-highlighted' : ''}">
+                  <span class="author-name">${autor.nombre || "Sin nombre"}</span>
+                  ${autor.institucion ? `<span class="author-affiliation">${autor.institucion}${autor.pais ? `, ${autor.pais}` : ""}</span>` : ""}
+                  ${esSearched ? `<span class="author-badge">👤 ORCID Buscado</span>` : ""}
+                </li>
+              `;
+            }).join("")}
+          </ul>
+        </details>
+      `;
+    }
+
+    html += `</div>`;
+    return html;
+  };
 
   const oaStatusColor = row.is_oa && row.is_oa !== "closed" ? "oa-badge-green" : "oa-badge-red";
 
@@ -50,16 +78,10 @@ export function agregarFila(row) {
 
     <div class="card-details">
       <div class="detail-item">
-        <strong>Editorial:</strong> ${row.publisher || "N/A"}
+        <strong>Editorial:</strong> ${row.publisherUrl ? `<a href="${row.publisherUrl}" target="_blank">${row.publisher || "N/A"}</a>` : (row.publisher || "N/A")}
       </div>
       <div class="detail-item">
         <strong>Citas:</strong> <span class="citas-badge">${row.citas || 0}</span>
-      </div>
-      <div class="detail-item">
-        <strong>Institución:</strong> ${row.institucion || "N/A"}
-      </div>
-      <div class="detail-item">
-        <strong>País:</strong> ${row.pais || "N/A"}
       </div>
       <div class="detail-item">
         <strong>Tema:</strong> ${row.tema || "N/A"}
@@ -75,7 +97,7 @@ export function agregarFila(row) {
       </div>
     </div>
 
-    ${autoresHtml}
+    ${generarAutoresHtml()}
 
     <div class="card-links">
       ${row.pdf ? `<a href="${row.pdf}" target="_blank" class="btn-pdf">📄 Descargar PDF</a>` : ""}

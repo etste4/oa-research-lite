@@ -33,17 +33,55 @@ export function obtenerAutores(item) {
     todosAutores: autores
   };
 }
-export function obtenerDatosOpenAlex(openAlexItem) {
+
+export function obtenerAutoresDeOpenAlex(oaItem) {
+  if (!oaItem.authorships || !Array.isArray(oaItem.authorships)) {
+    return [];
+  }
+
+  return oaItem.authorships.map(authorship => {
+    const name = authorship.author?.display_name || "";
+    return {
+      family: name.split(" ").pop(),
+      given: name.split(" ").slice(0, -1).join(" ")
+    };
+  });
+}
+export function obtenerDatosOpenAlex(openAlexItem, doiOriginal) {
   if (!openAlexItem) {
     return {
       citas: "",
       institucion: "",
       pais: "",
+      publisher: "",
+      publisherUrl: "",
       tema: "",
       enDoaj: "",
       tipoPublicacion: "",
-      rankingRevista: "",
-      apcPricing: ""
+      indexadoEn: "",
+      apcPricing: "",
+      autoresConAfiliacion: []
+    };
+  }
+
+  // VALIDACIÓN: El DOI de la respuesta debe coincidir con el que enviamos
+  const doiAlexLimpio = openAlexItem.doi?.replace(/^https?:\/\/doi\.org\//i, "").trim().toLowerCase() || "";
+  const doiOriginalLimpio = doiOriginal?.replace(/^https?:\/\/doi\.org\//i, "").trim().toLowerCase() || "";
+
+  if (doiAlexLimpio && doiOriginalLimpio && doiAlexLimpio !== doiOriginalLimpio) {
+    console.warn(`DOI Mismatch! Enviado: ${doiOriginalLimpio}, Recibido: ${doiAlexLimpio}`);
+    return {
+      citas: "",
+      institucion: "",
+      pais: "",
+      publisher: "",
+      publisherUrl: "",
+      tema: "",
+      enDoaj: "",
+      tipoPublicacion: "",
+      indexadoEn: "",
+      apcPricing: "",
+      autoresConAfiliacion: []
     };
   }
 
@@ -51,20 +89,43 @@ export function obtenerDatosOpenAlex(openAlexItem) {
 
   let institucion = "";
   let pais = "";
+  let publisher = "";
+  let publisherUrl = "";
+  let autoresConAfiliacion = [];
 
-  if (
-    Array.isArray(openAlexItem.authorships) &&
-    openAlexItem.authorships.length > 0
-  ) {
-    const primeraAuthorship = openAlexItem.authorships[0];
+  // Extraer autores con afiliaciones
+  if (Array.isArray(openAlexItem.authorships) && openAlexItem.authorships.length > 0) {
+    autoresConAfiliacion = openAlexItem.authorships.map(authorship => {
+      const nombre = authorship.author?.display_name || "Sin nombre";
+      const instituciones = authorship.institutions || [];
+      const institucion = instituciones.length > 0 ? instituciones[0].display_name : "";
+      const pais = instituciones.length > 0 ? instituciones[0].country_code : "";
+      const orcid = authorship.author?.orcid?.replace(/^https?:\/\/orcid\.org\//i, "") || "";
+      
+      return {
+        nombre,
+        institucion,
+        pais,
+        orcid
+      };
+    });
 
-    if (
-      Array.isArray(primeraAuthorship.institutions) &&
-      primeraAuthorship.institutions.length > 0
-    ) {
-      institucion = primeraAuthorship.institutions[0].display_name || "";
-      pais = primeraAuthorship.institutions[0].country_code || "";
+    // Obtener institución y país del primer autor
+    if (autoresConAfiliacion.length > 0) {
+      institucion = autoresConAfiliacion[0].institucion || "";
+      pais = autoresConAfiliacion[0].pais || "";
     }
+  }
+
+  // Extraer información de la editorial
+  // Obtener nombre de la editorial (host_organization_name está en primary_location.source)
+  if (openAlexItem.primary_location?.source?.host_organization_name) {
+    publisher = openAlexItem.primary_location.source.host_organization_name;
+  }
+  
+  // Obtener URL de la organización anfitriona (host_organization_lineage)
+  if (Array.isArray(openAlexItem.primary_location?.source?.host_organization_lineage) && openAlexItem.primary_location.source.host_organization_lineage.length > 0) {
+    publisherUrl = openAlexItem.primary_location.source.host_organization_lineage[0];
   }
 
   const tema = openAlexItem.primary_topic?.display_name || "";
@@ -91,11 +152,14 @@ export function obtenerDatosOpenAlex(openAlexItem) {
     citas,
     institucion,
     pais,
+    publisher,
+    publisherUrl,
     tema,
     enDoaj,
     tipoPublicacion,
     indexadoEn,
-    apcPricing
+    apcPricing,
+    autoresConAfiliacion
   };
 }
 

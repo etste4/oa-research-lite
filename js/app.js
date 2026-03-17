@@ -2,12 +2,13 @@ import {
   validarORCID,
   yearFromCrossrefItem,
   obtenerAutores,
+  obtenerAutoresDeOpenAlex,
   obtenerDatosOpenAlex
 } from "../utils/helpers.js";
 
 import { buscarCrossrefPorORCID } from "./api-crossref.js";
 import { buscarOAporDOI } from "./api-unpaywall.js";
-import { buscarOpenAlexPorDOI } from "./api-openalex.js";
+import { buscarOpenAlexPorDOI, buscarOpenAlexPorORCID, obtenerNombreAutorORCID } from "./api-openalex.js";
 import { limpiarTabla, agregarFila } from "./render.js";
 
 const btn = document.getElementById("searchBtn");
@@ -46,7 +47,7 @@ btn.addEventListener("click", async () => {
 
   limpiarTabla();
   actualizarResumen([]);
-  status.textContent = "Consultando Crossref...";
+  status.textContent = "Consultando Crossref y OpenAlex...";
 
   try {
     const items = await buscarCrossrefPorORCID(orcid);
@@ -58,38 +59,89 @@ btn.addEventListener("click", async () => {
       return;
     }
 
+    // Buscar también en OpenAlex para artículos adicionales
+    status.textContent = "Consultando Crossref y OpenAlex...";
+    const itemsOpenAlex = await buscarOpenAlexPorORCID(orcid);
+    console.log("Resultados OpenAlex:", itemsOpenAlex);
+
+    // Combinar resultados, evitando duplicados (same DOI)
+    const doisEnCrossref = new Set(items.map(item => item.DOI?.toLowerCase()).filter(Boolean));
+    const itemsUnicos = [...items];
+
+    itemsOpenAlex.forEach(oaItem => {
+      const doiOA = oaItem.doi?.replace(/^https?:\/\/doi\.org\//i, "").toLowerCase();
+      if (doiOA && !doisEnCrossref.has(doiOA)) {
+        // Convertir formato OpenAlex al formato de Crossref para consistencia
+        const year = oaItem.publication_date ? parseInt(oaItem.publication_date.split("-")[0]) : "";
+        itemsUnicos.push({
+          title: [oaItem.title],
+          DOI: doiOA,
+          "container-title": [oaItem.primary_location?.source?.display_name || "Sin revista"],
+          author: obtenerAutoresDeOpenAlex(oaItem),
+          publisher: oaItem.host_organization_name || "",
+          "issued": year ? { "date-parts": [[year]] } : null,
+          // Flag para identificar que vino de OpenAlex
+          "_fromOpenAlex": true,
+          "_openAlexData": oaItem
+        });
+      }
+    });
+
     const resultadosProcesados = [];
 
-   for (const item of items) {
+  for (const item of itemsUnicos) {
 
   const { primerAutor, todosAutores } = obtenerAutores(item);
   const title = item.title?.[0] || "Sin título";
   const doi = item.DOI || "";
   const journal = item["container-title"]?.[0] || "";
-  const year = yearFromCrossrefItem(item);
-  const publisher = item.publisher || "";
+  const year = yearFromCrossrefItem(item) || (item.issued?.["date-parts"]?.[0]?.[0]) || "";
+  let publisher = item.publisher || "";
+
+  console.log(`[${title}] DOI de Crossref/OpenAlex:`, doi);
 
   let citas = "";
   let institucion = "";
   let pais = "";
+  let publisherUrl = "";
   let tema = "";
   let enDoaj = "";
   let tipoPublicacion = "";
   let indexadoEn = "";
   let apcPricing = "";
+  let todosAutoresConAfiliacion = [];
 
-  if (doi) {
-    const openAlex = await buscarOpenAlexPorDOI(doi);
-    const datosOA = obtenerDatosOpenAlex(openAlex);
+  let openAlex = null;
+
+  // Si el item vino de OpenAlex, ya tenemos los datos
+  if (item._fromOpenAlex && item._openAlexData) {
+    openAlex = item._openAlexData;
+    // Si viene de OpenAlex por ORCID, hacer búsqueda por DOI para obtener detalles completos
+    if (doi) {
+      const openAlexDetallado = await buscarOpenAlexPorDOI(doi);
+      if (openAlexDetallado) {
+        openAlex = openAlexDetallado;
+      }
+    }
+  } else if (doi) {
+    // Si vino de Crossref, buscamos en OpenAlex por DOI
+    openAlex = await buscarOpenAlexPorDOI(doi);
+  }
+
+  if (openAlex) {
+    const datosOA = obtenerDatosOpenAlex(openAlex, doi);
 
     citas = datosOA.citas;
     institucion = datosOA.institucion;
     pais = datosOA.pais;
+    publisher = datosOA.publisher; // Siempre asignar desde OpenAlex (puede estar vacío)
+    publisherUrl = datosOA.publisherUrl;
     tema = datosOA.tema;
     enDoaj = datosOA.enDoaj;
     tipoPublicacion = datosOA.tipoPublicacion;
     indexadoEn = datosOA.indexadoEn;
     apcPricing = datosOA.apcPricing;
+    todosAutoresConAfiliacion = datosOA.autoresConAfiliacion;
   }
 
   let estadoOA = "closed";
@@ -135,6 +187,7 @@ btn.addEventListener("click", async () => {
   journal,
   year,
   publisher,
+  publisherUrl,
   pdf,
   landing,
   primerAutor,
@@ -146,7 +199,9 @@ btn.addEventListener("click", async () => {
   enDoaj,
   tipoPublicacion,
   indexadoEn,
-  apcPricing
+  apcPricing,
+  todosAutoresConAfiliacion,
+  orcidBuscado: orcid
 };
 
 resultadosProcesados.push(fila);
@@ -155,7 +210,7 @@ agregarFila(fila);
 
 actualizarResumen(resultadosProcesados);
 
-    status.textContent = `Se encontraron ${items.length} resultados en Crossref`;
+    status.textContent = `Se encontraron ${resultadosProcesados.length} artículos (Crossref + OpenAlex)`;
   } catch (error) {
     console.error("Error real:", error);
     status.textContent = "Error al consultar Crossref";
