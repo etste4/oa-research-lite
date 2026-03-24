@@ -696,3 +696,45 @@ font-weight:600;
 .footer-content a:hover {
   text-decoration: underline;
 }
+
+/* Estilos para información del autor ORCID */
+#authorInfo {
+  margin: 20px 0;
+}
+
+.author-profile {
+  background: linear-gradient(135deg, #e8f4f8 0%, #f0f8fc 100%);
+  border-left: 5px solid var(--color-secundario);
+  border-radius: 10px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 12px rgba(31, 106, 165, 0.12);
+  font-size: 15px;
+  color: var(--color-texto);
+  line-height: 1.6;
+}
+
+.author-profile strong {
+  display: block;
+  font-size: 18px;
+  color: var(--color-primario);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.author-profile a {
+  color: var(--color-link);
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 8px;
+  display: inline-block;
+  padding: 6px 12px;
+  background: rgba(11, 99, 201, 0.1);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.author-profile a:hover {
+  background: rgba(11, 99, 201, 0.2);
+  text-decoration: underline;
+}
+}
