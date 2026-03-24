@@ -9,6 +9,7 @@ import {
 import { buscarCrossrefPorORCID } from "./api-crossref.js";
 import { buscarOAporDOI } from "./api-unpaywall.js";
 import { buscarOpenAlexPorDOI, buscarOpenAlexPorORCID, obtenerNombreAutorORCID } from "./api-openalex.js";
+import { obtenerDatosAutorORCID } from "./api-orcid.js";
 import { limpiarTabla, agregarFila } from "./render.js";
 
 const btn = document.getElementById("searchBtn");
@@ -47,9 +48,31 @@ btn.addEventListener("click", async () => {
 
   limpiarTabla();
   actualizarResumen([]);
-  status.textContent = "Consultando Crossref y OpenAlex...";
+  status.textContent = "Consultando ORCID, Crossref y OpenAlex...";
 
   try {
+    let datosAutorORCID = null;
+    
+    // Obtener datos del perfil de ORCID
+    datosAutorORCID = await obtenerDatosAutorORCID(orcid);
+    
+    if (datosAutorORCID) {
+      console.log("Datos de perfil ORCID:", datosAutorORCID);
+      // Mostrar info del autor en el ID de usuario o en algún lugar visible
+      const infoAutor = document.getElementById("authorInfo");
+      if (infoAutor) {
+        infoAutor.innerHTML = `
+          <div class="author-profile">
+            <strong>${datosAutorORCID.nombreCompleto}</strong><br>
+            ${datosAutorORCID.institucion ? "🏢 " + datosAutorORCID.institucion + "<br>" : ""}
+            ${datosAutorORCID.pais ? "🌍 " + datosAutorORCID.pais + "<br>" : ""}
+            ${datosAutorORCID.email ? "📧 " + datosAutorORCID.email + "<br>" : ""}
+            <a href="${datosAutorORCID.url}" target="_blank">Ver perfil ORCID</a>
+          </div>
+        `;
+      }
+    }
+
     const items = await buscarCrossrefPorORCID(orcid);
 
     console.log("Resultados Crossref:", items);
@@ -89,7 +112,7 @@ btn.addEventListener("click", async () => {
 
     const resultadosProcesados = [];
 
-  for (const item of itemsUnicos) {
+    for (const item of itemsUnicos) {
 
   const { primerAutor, todosAutores } = obtenerAutores(item);
   const title = item.title?.[0] || "Sin título";
@@ -201,7 +224,8 @@ btn.addEventListener("click", async () => {
   indexadoEn,
   apcPricing,
   todosAutoresConAfiliacion,
-  orcidBuscado: orcid
+  orcidBuscado: orcid,
+  datosAutorORCID: datosAutorORCID
 };
 
 resultadosProcesados.push(fila);
