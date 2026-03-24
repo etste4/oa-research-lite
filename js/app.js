@@ -17,6 +17,9 @@ import { renderizarDashboard } from "./render-dashboard-simple.js";
 const btn = document.getElementById("searchBtn");
 const input = document.getElementById("orcidInput");
 const status = document.getElementById("status");
+const downloadCsvBtn = document.getElementById("downloadCsvBtn");
+
+let resultadosGlobal = []; // Para exportar CSV
 
 async function cargarPersonas() {
   const res = await fetch("data/persons.csv");
@@ -388,10 +391,70 @@ actualizarResumen(resultadosProcesados);
     // Renderizar el dashboard
     renderizarDashboard(persona);
 
+    // Guardar para exportar CSV
+    resultadosGlobal = resultadosProcesados;
+    downloadCsvBtn.style.display = "inline-block";
+
     status.textContent = `Se encontraron ${resultadosProcesados.length} artículos (Crossref + OpenAlex)`;
   } catch (error) {
     console.error("Error real:", error);
     status.textContent = "Error al consultar Crossref";
   }
 });
+
+// Función para descargar CSV
+function descargarCSV() {
+  if (resultadosGlobal.length === 0) {
+    alert("No hay datos para descargar");
+    return;
+  }
+
+  // Definir columnas
+  const columnas = [
+    "Título",
+    "DOI",
+    "Año",
+    "Revista",
+    "Editorial",
+    "Primer Autor",
+    "Open Access",
+    "PDF Disponible",
+    "Citas",
+    "Tema",
+    "Tipo de Publicación",
+    "En DOAJ"
+  ];
+
+  // Crear filas CSV
+  const filas = resultadosGlobal.map(item => [
+    (item.title || "").replace(/"/g, '""'),
+    item.doi || "",
+    item.year || "",
+    (item.journal || "").replace(/"/g, '""'),
+    (item.publisher || "").replace(/"/g, '""'),
+    (item.primerAutor || "").replace(/"/g, '""'),
+    item.is_oa && item.is_oa !== "closed" ? "Sí" : "No",
+    item.pdf ? "Sí" : "No",
+    item.citas || 0,
+    (item.tema || "").replace(/"/g, '""'),
+    (item.tipoPublicacion || "").replace(/"/g, '""'),
+    item.enDoaj || ""
+  ]);
+
+  // Construir CSV
+  let csv = columnas.join(",") + "\n";
+  filas.forEach(fila => {
+    csv += fila.map(celda => `"${celda}"`).join(",") + "\n";
+  });
+
+  // Descargar
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `articulos-unh-${new Date().toISOString().split("T")[0]}.csv`;
+  link.click();
+}
+
+// Event listener para botón CSV
+downloadCsvBtn.addEventListener("click", descargarCSV);
 
