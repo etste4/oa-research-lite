@@ -3,15 +3,35 @@ export function validarORCID(orcid) {
 }
 
 export function yearFromCrossrefItem(item) {
-  const fields = [item["published-print"], item["published-online"], item["issued"]];
+  // Priorizar journal-issue.published-online (es más confiable)
+  const fields = [
+    item["journal-issue"]?.["published-online"],
+    item["published-print"],
+    item["published-online"],
+    item["issued"]
+  ];
+
+  let bestYear = null; // Guardar el mejor año encontrado
+  let year1969 = null; // Guardar 1969 como fallback
 
   for (const f of fields) {
     if (f && f["date-parts"] && f["date-parts"][0] && f["date-parts"][0][0]) {
-      return f["date-parts"][0][0];
+      const year = f["date-parts"][0][0];
+      
+      // Si encuentra un año válido (no 1969, >= 1900, <= actual), usarlo
+      if (year !== 1969 && year >= 1900 && year <= new Date().getFullYear()) {
+        return year;
+      }
+      
+      // Guardar 1969 como último recurso
+      if (year === 1969 && !year1969) {
+        year1969 = year;
+      }
     }
   }
 
-  return "";
+  // Si no encontró nada mejor, retornar 1969 si lo encontró
+  return year1969 || "";
 }
 
 export function obtenerAutores(item) {

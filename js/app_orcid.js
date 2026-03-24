@@ -141,7 +141,8 @@ btn.addEventListener("click", async () => {
       const doiOA = oaItem.doi?.replace(/^https?:\/\/doi\.org\//i, "").toLowerCase();
       if (doiOA && !doisEnCrossref.has(doiOA)) {
         // Convertir formato OpenAlex al formato de Crossref para consistencia
-        const year = oaItem.publication_date ? parseInt(oaItem.publication_date.split("-")[0]) : "";
+        let year = oaItem.publication_date ? parseInt(oaItem.publication_date.split("-")[0]) : "";
+        
         itemsUnicos.push({
           title: [oaItem.title],
           DOI: doiOA,
@@ -164,7 +165,25 @@ btn.addEventListener("click", async () => {
   const title = item.title?.[0] || "Sin título";
   const doi = item.DOI || "";
   const journal = item["container-title"]?.[0] || "";
-  const year = yearFromCrossrefItem(item) || (item.issued?.["date-parts"]?.[0]?.[0]) || "";
+  
+  let itemCrossref = item;
+  
+  // Si el item vino de OpenAlex, buscar en Crossref por DOI para obtener datos correctos
+  if (item._fromOpenAlex && doi) {
+    try {
+      const response = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`);
+      if (response.ok) {
+        const dataCrossref = await response.json();
+        if (dataCrossref.message) {
+          itemCrossref = dataCrossref.message;
+        }
+      }
+    } catch (error) {
+      console.log("No se encontró en Crossref por DOI, usando datos de OpenAlex");
+    }
+  }
+  
+  const year = yearFromCrossrefItem(itemCrossref) || (item.issued?.["date-parts"]?.[0]?.[0]) || "";
   let publisher = item.publisher || "";
 
   console.log(`[${title}] DOI de Crossref/OpenAlex:`, doi);
