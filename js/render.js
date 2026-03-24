@@ -16,22 +16,29 @@ export function agregarFila(row) {
 
   const generarAutoresHtml = () => {
     if (!row.todosAutoresConAfiliacion || row.todosAutoresConAfiliacion.length === 0) {
-      return `<div class="card-authors"><strong>Autores:</strong> Sin información</div>`;
+      return `<div class="card-authors"><strong>Autor Principal:</strong> Sin información</div>`;
     }
 
     const primerAutor = row.todosAutoresConAfiliacion[0];
     const esPrimerAutorSearched = primerAutor.orcid === row.orcidBuscado;
+    
+    // Encontrar posición del autor buscado si NO es el primer autor
+    let posicionAutorBuscado = null;
+    if (!esPrimerAutorSearched && row.orcidBuscado) {
+      posicionAutorBuscado = row.todosAutoresConAfiliacion.findIndex(a => a.orcid === row.orcidBuscado) + 1;
+    }
 
     let html = `
       <div class="card-authors">
-        <strong>Autores:</strong>
+        <strong>Autor Principal:</strong>
         <ul class="authors-list">
           <li class="${esPrimerAutorSearched ? 'author-highlighted' : ''}">
             <span class="author-name">${primerAutor.nombre || "Sin nombre"}</span>
             ${primerAutor.institucion ? `<span class="author-affiliation">${primerAutor.institucion}${primerAutor.pais ? `, ${primerAutor.pais}` : ""}</span>` : ""}
-            ${esPrimerAutorSearched ? `<span class="author-badge">👤 ORCID Buscado</span>` : ""}
+            ${esPrimerAutorSearched ? `<span class="author-badge">👤 Tu ORCID - Posición 1/${row.todosAutoresConAfiliacion.length}</span>` : ""}
           </li>
         </ul>
+        ${posicionAutorBuscado ? `<div style="margin-top: 8px; padding: 8px; background: #e8f5e9; border-left: 3px solid #4caf50; border-radius: 4px;"><strong style="color: #2e7d32;">Tu Posición:</strong> <span style="color: #388e3c;">#${posicionAutorBuscado}/${row.todosAutoresConAfiliacion.length}</span></div>` : ""}
     `;
 
     if (row.todosAutoresConAfiliacion.length > 1) {
@@ -39,13 +46,13 @@ export function agregarFila(row) {
         <details class="more-authors">
           <summary>Ver todos (${row.todosAutoresConAfiliacion.length})</summary>
           <ul class="authors-list">
-            ${row.todosAutoresConAfiliacion.slice(1).map(autor => {
+            ${row.todosAutoresConAfiliacion.slice(1).map((autor, idx) => {
               const esSearched = autor.orcid === row.orcidBuscado;
               return `
                 <li class="${esSearched ? 'author-highlighted' : ''}">
                   <span class="author-name">${autor.nombre || "Sin nombre"}</span>
                   ${autor.institucion ? `<span class="author-affiliation">${autor.institucion}${autor.pais ? `, ${autor.pais}` : ""}</span>` : ""}
-                  ${esSearched ? `<span class="author-badge">👤 ORCID Buscado</span>` : ""}
+                  ${esSearched ? `<span class="author-badge">👤 Tu ORCID - Posición ${idx + 2}</span>` : ""}
                 </li>
               `;
             }).join("")}
