@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 
-function actualizarResumen(resultados) {
+function actualizarResumen(resultados, orcidBuscado = null) {
   const totalArticulos = resultados.length;
 
   const totalOA = resultados.filter(r => r.is_oa && r.is_oa !== "closed").length;
@@ -106,11 +106,24 @@ function actualizarResumen(resultados) {
 
   const totalDOAJ = resultados.filter(r => r.enDoaj === "Sí").length;
 
+  // Contar en cuántos artículos el docente es AUTOR PRINCIPAL (primer autor)
+  const totalAutorPrincipal = orcidBuscado ? resultados.filter(r => {
+    return r.todosAutoresConAfiliacion && 
+           r.todosAutoresConAfiliacion.length > 0 &&
+           r.todosAutoresConAfiliacion[0].orcid === orcidBuscado;
+  }).length : 0;
+
   document.getElementById("totalArticulos").textContent = totalArticulos;
   document.getElementById("totalOA").textContent = totalOA;
   document.getElementById("totalPDF").textContent = totalPDF;
   document.getElementById("totalCitas").textContent = totalCitas;
   document.getElementById("totalDOAJ").textContent = totalDOAJ;
+  
+  // Mostrar autor principal si existe el elemento
+  const autorPrincipalElement = document.getElementById("totalAutorPrincipal");
+  if (autorPrincipalElement) {
+    autorPrincipalElement.textContent = totalAutorPrincipal;
+  }
 }
 
 btn.addEventListener("click", async () => {
@@ -383,7 +396,7 @@ resultadosProcesados.push(fila);
 agregarFila(fila);
 }
 
-actualizarResumen(resultadosProcesados);
+actualizarResumen(resultadosProcesados, persona.orcid);
 
     // Agregar datos al dashboard
     agregarAlDashboard(persona, resultadosProcesados);
