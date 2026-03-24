@@ -9,7 +9,10 @@ import {
 import { buscarCrossrefPorORCID } from "./api-crossref.js";
 import { buscarOAporDOI } from "./api-unpaywall.js";
 import { buscarOpenAlexPorDOI, buscarOpenAlexPorORCID, obtenerNombreAutorORCID } from "./api-openalex.js";
+import { obtenerDatosAutorORCIDMejorado } from "./api-orcid.js";
 import { limpiarTabla, agregarFila } from "./render.js";
+import { agregarAlDashboard, limpiarDashboard } from "./dashboard.js";
+import { renderizarDashboard } from "./render-dashboard-simple.js";
 
 const btn = document.getElementById("searchBtn");
 const input = document.getElementById("orcidInput");
@@ -129,10 +132,76 @@ const orcid = persona.orcid;
   }
 
   limpiarTabla();
+  limpiarDashboard();
   actualizarResumen([]);
-  status.textContent = "Consultando Crossref y OpenAlex...";
+  status.textContent = "Consultando ORCID, Crossref y OpenAlex...";
 
   try {
+    let datosAutorORCID = null;
+    
+    // Obtener datos del perfil de ORCID (con fallback a OpenAlex)
+    datosAutorORCID = await obtenerDatosAutorORCIDMejorado(orcid);
+    
+    if (datosAutorORCID) {
+      console.log("Datos de perfil ORCID:", datosAutorORCID);
+      // Mostrar info del autor en el div authorInfo
+      const infoAutor = document.getElementById("authorInfo");
+      if (infoAutor) {
+        const restrictedClass = datosAutorORCID.restringido ? "restricted" : "";
+        
+        let contenidoInformacion = `
+          <div class="author-profile ${restrictedClass}">
+            <strong>${datosAutorORCID.nombreCompleto}</strong>
+        `;
+        
+        if (!datosAutorORCID.restringido) {
+          // Nombres alternativos - MEJORADO
+          if (datosAutorORCID.nombresAlternativos && datosAutorORCID.nombresAlternativos.length > 0) {
+            const tarjetasNombres = datosAutorORCID.nombresAlternativos.map(nombre =>
+              `<span style="display: inline-block; background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 12px; margin: 4px 4px 4px 0; font-weight: 500;">${nombre}</span>`
+            ).join("");
+            contenidoInformacion += `<div style="margin-top: 10px; font-size: 13px; color: #666; font-weight: 600; margin-bottom: 6px;">También ha publicado como:</div><div>${tarjetasNombres}</div>`;
+          }
+          
+          // Email, País, Institución en línea
+          let linea = "";
+          if (datosAutorORCID.email) linea += "📧 " + datosAutorORCID.email;
+          if (datosAutorORCID.pais) linea += (linea ? " • " : "") + "🌍 " + datosAutorORCID.pais;
+          if (datosAutorORCID.institucion) linea += (linea ? " • " : "") + "🏢 " + datosAutorORCID.institucion;
+          
+          if (linea) {
+            contenidoInformacion += `<div style="font-size: 14px; margin-top: 8px; color: #555; font-weight: 500;">${linea}</div>`;
+          }
+          
+          // Instituciones asociadas/Afiliaciones
+          if (datosAutorORCID.institucionesConocidas && datosAutorORCID.institucionesConocidas.length > 0) {
+            contenidoInformacion += `<div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #0369a1;">`;
+            contenidoInformacion += `<div style="font-size: 14px; color: #0369a1; font-weight: 700; margin-bottom: 8px;">🏫 Instituciones Asociadas</div>`;
+            datosAutorORCID.institucionesConocidas.forEach(inst => {
+              if (inst.nombre) {
+                contenidoInformacion += `<div style="font-size: 13px; color: #333; margin: 6px 0; padding: 8px; background: #f0f9ff; border-left: 3px solid #0ea5e9; border-radius: 3px;">${inst.nombre}${inst.pais ? " <span style='color: #666; font-size: 12px;'>(" + inst.pais + ")</span>" : ""}</div>`;
+              }
+            });
+            contenidoInformacion += `</div>`;
+          }
+          
+          // Educación
+          if (datosAutorORCID.educacion && datosAutorORCID.educacion.length > 0) {
+            contenidoInformacion += `<div style="margin-top: 8px; border-top: 1px solid rgba(31, 106, 165, 0.15); padding-top: 6px; font-size: 12px;">`;
+            datosAutorORCID.educacion.forEach(edu => {
+              if (edu.institucion) {
+                contenidoInformacion += `<div>🎓 ${edu.institucion}${edu.grado ? " - " + edu.grado : ""}${edu.fin ? " (" + edu.fin + ")" : ""}</div>`;
+              }
+            });
+            contenidoInformacion += `</div>`;
+          }
+        }
+        
+        contenidoInformacion += `</div>`;
+        infoAutor.innerHTML = contenidoInformacion;
+      }
+    }
+
     const items = await buscarCrossrefPorORCID(orcid);
 
     console.log("Resultados Crossref:", items);
@@ -284,7 +353,8 @@ const orcid = persona.orcid;
   indexadoEn,
   apcPricing,
   todosAutoresConAfiliacion,
-  orcidBuscado: orcid
+  orcidBuscado: orcid,
+  datosAutorORCID: datosAutorORCID
 };
 
 resultadosProcesados.push(fila);
@@ -292,6 +362,12 @@ agregarFila(fila);
 }
 
 actualizarResumen(resultadosProcesados);
+
+    // Agregar datos al dashboard
+    agregarAlDashboard(persona, resultadosProcesados);
+    
+    // Renderizar el dashboard
+    renderizarDashboard(persona);
 
     status.textContent = `Se encontraron ${resultadosProcesados.length} artículos (Crossref + OpenAlex)`;
   } catch (error) {

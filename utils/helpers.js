@@ -146,7 +146,7 @@ export function obtenerDatosOpenAlex(openAlexItem, doiOriginal) {
   // APC PRICING
   const apcPricing = openAlexItem.apc_paid?.pricing_currency
     ? `${openAlexItem.apc_paid.pricing_currency} ${openAlexItem.apc_paid.price}`
-    : (openAlexItem.has_apc && !openAlexItem.apc_paid ? "Sin información" : "Gratis");
+    : (openAlexItem.has_apc && !openAlexItem.apc_paid ? "Sin información" : "");
 
   return {
     citas,

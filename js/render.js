@@ -1,10 +1,18 @@
 export function limpiarTabla() {
   const container = document.getElementById("resultsCards");
+  if (!container) {
+    console.warn('resultsCards container no encontrado');
+    return;
+  }
   container.innerHTML = "";
 }
 
 export function agregarFila(row) {
   const container = document.getElementById("resultsCards");
+  if (!container) {
+    console.warn('resultsCards container no encontrado');
+    return;
+  }
 
   const generarAutoresHtml = () => {
     if (!row.todosAutoresConAfiliacion || row.todosAutoresConAfiliacion.length === 0) {
@@ -92,8 +100,9 @@ export function agregarFila(row) {
       <div class="detail-item">
         <strong>Indexado en:</strong> ${row.indexadoEn || "N/A"}
       </div>
+      ${row.apcPricing ? `<div class="detail-item"><strong>APC:</strong> ${row.apcPricing}</div>` : ''}
       <div class="detail-item">
-        <strong>APC:</strong> ${row.apcPricing || "N/A"}
+        <strong>PDF:</strong> ${row.pdf && row.pdf.trim() ? `<a href="${row.pdf}" target="_blank" style="color: #e74c3c; text-decoration: none;">📑 Acceso</a>` : '<span style="color: #95a5a6;">Sin acceso</span>'}
       </div>
     </div>
 
